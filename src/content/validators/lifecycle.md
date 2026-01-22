@@ -50,17 +50,35 @@ Multiple validators can match the same event. For example, a `Write` to `src/api
 
 All matching validators run concurrently, each spawning its own sub-agent:
 
-```
-Hook Event: PostToolUse (Write to src/api.ts)
-     │
-     ├──► no-secrets validator ──► Sub-agent 1 ──► Result 1
-     │
-     ├──► no-console validator ──► Sub-agent 2 ──► Result 2
-     │
-     └──► api-standards validator ──► Sub-agent 3 ──► Result 3
-                                                        │
-                                            ◄───────────┘
-                                         Aggregate Results
+```mermaid
+flowchart TB
+    subgraph Hook["Hook Event: PostToolUse"]
+        E[Write to src/api.ts]
+    end
+
+    E --> F{Find Matching<br/>Validators}
+
+    F --> P1 & P2 & P3
+
+    subgraph Parallel["Concurrent Execution"]
+        direction TB
+        subgraph V1["no-secrets"]
+            P1[Sub-agent 1] --> R1[Result 1]
+        end
+        subgraph V2["no-console"]
+            P2[Sub-agent 2] --> R2[Result 2]
+        end
+        subgraph V3["api-standards"]
+            P3[Sub-agent 3] --> R3[Result 3]
+        end
+    end
+
+    R1 & R2 & R3 --> Agg[Aggregate Results]
+
+    Agg --> Out{Outcome}
+    Out -->|All Pass| Continue[Continue]
+    Out -->|Any Warn| Warn[Log & Continue]
+    Out -->|Any Error| Block[Agent Must Fix]
 ```
 
 Each sub-agent receives:
