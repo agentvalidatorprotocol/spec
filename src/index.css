@@ -1,0 +1,225 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --primary: #0E0E0E;
+    --primary-light: #1A1A1A;
+    --accent-warm: #D4A27F;
+    --accent-mint: #10B981;
+    --bg-light: #FDFDF7;
+    --bg-dark: #09090B;
+    --severity-info: #3B82F6;
+    --severity-warn: #F59E0B;
+    --severity-error: #EF4444;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply bg-background-light text-primary antialiased;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+    font-size: 16px;
+    line-height: 1.7;
+  }
+
+  .dark body {
+    @apply bg-background-dark text-gray-100;
+  }
+
+  code, pre {
+    font-family: 'JetBrains Mono', 'Fira Code', ui-monospace, monospace;
+  }
+}
+
+@layer components {
+  /* Navigation */
+  .nav-link {
+    @apply px-4 py-2 text-sm font-medium text-gray-600 hover:text-primary transition-colors;
+  }
+
+  .nav-link.active {
+    @apply text-primary border-b-2 border-accent-warm;
+  }
+
+  .dark .nav-link {
+    @apply text-gray-400 hover:text-white;
+  }
+
+  .dark .nav-link.active {
+    @apply text-white;
+  }
+
+  .sidebar-link {
+    @apply block px-3 py-2 text-sm text-gray-600 hover:text-primary hover:bg-gray-100 rounded-md transition-colors;
+  }
+
+  .sidebar-link.active {
+    @apply text-primary bg-gray-100 font-medium;
+  }
+
+  .dark .sidebar-link {
+    @apply text-gray-400 hover:text-white hover:bg-gray-800;
+  }
+
+  .dark .sidebar-link.active {
+    @apply text-white bg-gray-800;
+  }
+
+  /* Code blocks */
+  .code-block {
+    @apply relative bg-gray-900 text-gray-100 rounded-xl overflow-hidden my-6;
+  }
+
+  .code-block pre {
+    @apply p-5 overflow-x-auto text-sm leading-relaxed;
+  }
+
+  .code-block .copy-btn {
+    @apply absolute top-3 right-3 p-2 text-gray-400 hover:text-white bg-gray-800 rounded-lg transition-colors;
+  }
+
+  /* Callouts */
+  .callout {
+    @apply p-5 rounded-xl border-l-4 my-6;
+  }
+
+  .callout.info {
+    @apply bg-blue-50 border-severity-info;
+  }
+
+  .callout.warn {
+    @apply bg-amber-50 border-severity-warn;
+  }
+
+  .callout.error {
+    @apply bg-red-50 border-severity-error;
+  }
+
+  .dark .callout.info {
+    @apply bg-blue-950/30;
+  }
+
+  .dark .callout.warn {
+    @apply bg-amber-950/30;
+  }
+
+  .dark .callout.error {
+    @apply bg-red-950/30;
+  }
+
+  /* Prose styling - more spacious like Claude docs */
+  .prose {
+    @apply text-gray-700;
+    font-size: 1rem;
+    line-height: 1.8;
+  }
+
+  .dark .prose {
+    @apply text-gray-300;
+  }
+
+  .prose h1 {
+    @apply text-4xl font-bold text-primary mb-6 mt-0 tracking-tight;
+    line-height: 1.2;
+  }
+
+  .dark .prose h1 {
+    @apply text-white;
+  }
+
+  .prose h2 {
+    @apply text-2xl font-semibold text-primary mt-12 mb-4 tracking-tight;
+    line-height: 1.3;
+  }
+
+  .dark .prose h2 {
+    @apply text-white;
+  }
+
+  .prose h3 {
+    @apply text-xl font-semibold text-primary mt-8 mb-3;
+  }
+
+  .dark .prose h3 {
+    @apply text-white;
+  }
+
+  .prose p {
+    @apply mb-5;
+  }
+
+  .prose .lead {
+    @apply text-xl text-gray-600 mb-8 leading-relaxed;
+  }
+
+  .dark .prose .lead {
+    @apply text-gray-400;
+  }
+
+  .prose ul, .prose ol {
+    @apply my-5 pl-6 space-y-2;
+  }
+
+  .prose li {
+    @apply text-gray-700;
+  }
+
+  .dark .prose li {
+    @apply text-gray-300;
+  }
+
+  .prose a {
+    @apply text-accent-mint hover:underline;
+  }
+
+  .prose code:not(.code-block code) {
+    @apply px-1.5 py-0.5 bg-gray-100 rounded text-sm font-medium text-gray-900;
+  }
+
+  .dark .prose code:not(.code-block code) {
+    @apply bg-gray-800 text-gray-100;
+  }
+
+  /* Ensure code blocks inside prose don't get inline styling */
+  .prose .code-block code {
+    @apply bg-transparent p-0 text-gray-100;
+  }
+
+  .prose table {
+    @apply w-full my-6 text-sm;
+  }
+
+  .prose th {
+    @apply text-left font-semibold text-primary py-3 px-4 bg-gray-50 border-b border-gray-200;
+  }
+
+  .dark .prose th {
+    @apply text-white bg-gray-800 border-gray-700;
+  }
+
+  .prose td {
+    @apply py-3 px-4 border-b border-gray-100;
+  }
+
+  .dark .prose td {
+    @apply border-gray-800;
+  }
+
+  .prose strong {
+    @apply font-semibold text-primary;
+  }
+
+  .dark .prose strong {
+    @apply text-white;
+  }
+}
+
+@layer utilities {
+  .scroll-mt-nav {
+    scroll-margin-top: 6rem;
+  }
+}

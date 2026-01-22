@@ -1,0 +1,28 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# TypeScript build info
+*.tsbuildinfo
+vite.config.js
+vite.config.d.ts
+
+# Logs
+*.log
+npm-debug.log*
+
+# Agent/Tool scratch directories
+.swissarmyhammer/
+.acp/
