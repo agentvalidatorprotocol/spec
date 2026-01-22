@@ -34,23 +34,75 @@ After the tool completes, the agent fires the appropriate hook event. Most valid
 
 ### 3. Matching Validators Run
 
-Each validator checks if it should run based on:
+All validators in the validators directory are checked against the event. Each validator matches based on:
 
+- **Trigger type**: Does the hook event match (e.g., `PostToolUse`, `Stop`)?
 - **Tool matcher**: Does the tool match (e.g., Write, Edit)?
 - **File patterns**: Does the file match (e.g., *.ts, *.jsx)?
-- **Trigger type**: Is this the right hook event?
+- **Trigger matcher**: For lifecycle events, does the source match (e.g., `startup`)?
 
-### 4. Sub-Agent Evaluates
+Multiple validators can match the same event. For example, a `Write` to `src/api.ts` might match:
+- `no-secrets` (matches all Write/Edit)
+- `no-console` (matches *.ts files)
+- `api-standards` (matches src/api/** files)
 
-For each matching validator, a sub-agent is spawned with the VALIDATOR.md prompt. The sub-agent receives the diff of changes and evaluates them against the rules.
+### 4. Parallel Evaluation
+
+All matching validators run concurrently, each spawning its own sub-agent:
+
+```
+Hook Event: PostToolUse (Write to src/api.ts)
+     │
+     ├──► no-secrets validator ──► Sub-agent 1 ──► Result 1
+     │
+     ├──► no-console validator ──► Sub-agent 2 ──► Result 2
+     │
+     └──► api-standards validator ──► Sub-agent 3 ──► Result 3
+                                                        │
+                                            ◄───────────┘
+                                         Aggregate Results
+```
+
+Each sub-agent receives:
+- The VALIDATOR.md prompt content
+- Context about the tool call (file path, changes, etc.)
+- Any hook-specific input data
 
 ### 5. Results Aggregated
 
-All validator results are collected and the most severe outcome determines the overall result:
+Results from all validators are collected. The aggregation rules:
 
-- **PASSED**: All validators passed - continue normally
-- **WARNED**: Some warnings found - log and continue
-- **ERROR**: Errors found - must fix before proceeding
+| Individual Results | Aggregated Outcome | Behavior |
+|-------------------|-------------------|----------|
+| All `passed: true` | **PASSED** | Continue normally |
+| Any `passed: false` with `severity: warn` | **WARNED** | Log warnings, continue |
+| Any `passed: false` with `severity: error` | **ERROR** | Block until fixed |
+
+When multiple validators fail:
+- All violations are combined into a single report
+- The agent sees all issues at once, not one at a time
+- This enables efficient batch fixing
+
+Example aggregated response:
+```json
+{
+  "outcome": "ERROR",
+  "validators": [
+    {
+      "name": "no-secrets",
+      "passed": false,
+      "violations": [...]
+    },
+    {
+      "name": "no-console",
+      "passed": false,
+      "violations": [...]
+    }
+  ],
+  "totalViolations": 3,
+  "summary": "2 validators failed with 3 total violations"
+}
+```
 
 ## Response Format
 

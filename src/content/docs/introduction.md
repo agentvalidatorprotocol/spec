@@ -74,3 +74,75 @@ Each validator specifies a severity that determines behavior on violation:
 | `info` | Log the result, continue execution |
 | `warn` | Notify user, continue execution |
 | `error` | Agent must fix violations before continuing |
+
+## Multiple Validators
+
+AVP is designed for projects to use many validators simultaneously. Validators are discovered from a directory and run in parallel.
+
+### Directory Organization
+
+```
+.validators/
+├── no-secrets.md           # Simple single-file validator
+├── no-console.md
+├── require-tests.md
+├── sql-injection/          # Complex validator with supporting files
+│   ├── VALIDATOR.md
+│   └── references/
+│       └── patterns.md
+└── custom-rules/           # Subdirectories for organization
+    ├── team-conventions.md
+    └── api-standards.md
+```
+
+Validators can be:
+- **Single files**: `name.md` in the validators directory
+- **Directories**: `name/VALIDATOR.md` with optional `scripts/`, `references/`, `assets/`
+- **Nested**: Organized in subdirectories by team, category, or concern
+
+### Discovery
+
+An AVP-compatible agent scans the validators directory and loads all valid VALIDATOR.md files. Each validator's `name` must be unique across the entire set.
+
+### Parallel Execution
+
+When a hook event fires, all matching validators run concurrently:
+
+```
+PostToolUse (Write to src/api.ts)
+    ├── no-secrets       ─┐
+    ├── no-console        ├── Run in parallel
+    ├── sql-injection     │
+    └── api-standards    ─┘
+```
+
+This parallel execution is a key advantage over monolithic hook scripts.
+
+### Result Aggregation
+
+Results from all validators are collected and the most severe outcome determines the overall result:
+
+| Validator Results | Overall Outcome |
+|-------------------|-----------------|
+| All pass | **PASSED** — continue normally |
+| Some warn, none error | **WARNED** — log warnings, continue |
+| Any error | **ERROR** — agent must fix before continuing |
+
+When multiple validators return errors, all violations are aggregated and presented to the agent together.
+
+### Filtering
+
+Use `category` and `tags` to run subsets of validators:
+
+```yaml
+# Run only security validators
+category: security
+
+# Run validators with specific tags
+tags: [blocking, pre-commit]
+```
+
+This enables workflows like:
+- **Fast feedback**: Run only `error` severity validators during development
+- **Pre-commit**: Run all `blocking` tagged validators before committing
+- **Full audit**: Run all validators including `info` severity for comprehensive reports
