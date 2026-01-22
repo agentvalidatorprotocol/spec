@@ -8,7 +8,7 @@ Validators follow a predictable lifecycle that integrates with the agent's hook 
 
 ```mermaid
 flowchart LR
-    A[Agent Edits File] --> B[Hook Event Fires]
+    A[Agent Acts] --> B[Hook Event Fires]
     B --> C{Validators Match?}
     C -->|Yes| D[Sub-Agent Evaluates]
     C -->|No| E[Continue]
@@ -24,9 +24,9 @@ flowchart LR
 
 ## Detailed Steps
 
-### 1. Agent Edits File
+### 1. Agent Acts
 
-The agent uses a tool like `Write`, `Edit`, or `MultiEdit` to modify a file in your project.
+Each turn of the AI agent is a chance to validate.
 
 ### 2. Hook Event Fires
 
