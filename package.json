@@ -24,6 +24,7 @@
   },
   "devDependencies": {
     "@prerenderer/renderer-puppeteer": "^1.2.4",
+    "puppeteer": "^24.0.0",
     "@prerenderer/rollup-plugin": "^0.3.12",
     "@types/node": "^25.0.10",
     "@types/react": "^18.3.12",
