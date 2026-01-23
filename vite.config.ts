@@ -34,6 +34,7 @@ export default defineConfig({
       renderer: '@prerenderer/renderer-puppeteer',
       rendererOptions: {
         renderAfterDocumentEvent: 'prerender-ready',
+        args: ['--no-sandbox', '--disable-setuid-sandbox'],
       },
     }),
   ],
