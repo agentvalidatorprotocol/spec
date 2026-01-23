@@ -35,13 +35,6 @@ export default defineConfig({
       rendererOptions: {
         renderAfterDocumentEvent: 'prerender-ready',
       },
-      postProcess(renderedRoute) {
-        // Fix any absolute paths for static hosting
-        renderedRoute.html = renderedRoute.html.replace(
-          /(?:src|href)="\/(?!\/)/g,
-          (match) => match.replace('="/', '="./')
-        )
-      },
     }),
   ],
   resolve: {
