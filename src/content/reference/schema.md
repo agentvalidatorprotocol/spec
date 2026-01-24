@@ -34,8 +34,8 @@ trigger: PostToolUse
 match:
   tools: [Write, Edit]
   files: ["*.ts", "*.tsx"]
-category: security
 tags:
+  - security
   - keyword1
   - keyword2
 ---
@@ -132,8 +132,7 @@ Common triggers:
 | `match.tools` | string[] | Tool names or regex patterns |
 | `match.files` | string[] | Glob patterns for files |
 | `triggerMatcher` | string | Matcher for lifecycle triggers |
-| `category` | string | Grouping category (e.g., `security`, `quality`) |
-| `tags` | string[] | Keywords for discovery and filtering |
+| `tags` | string[] | Keywords for discovery, filtering, and grouping |
 | `once` | boolean | Run only once per session (default: false) |
 | `timeout` | number | Execution timeout in seconds (default: 60) |
 | `license` | string | License name or reference |
@@ -215,19 +214,9 @@ Maximum execution time in seconds (default: 60):
 timeout: 30  # 30 second timeout
 ```
 
-#### category
-
-Groups validators for organization and filtering:
-
-```yaml
-category: security
-```
-
-Common categories: `security`, `quality`, `style`, `documentation`, `testing`
-
 #### tags
 
-Keywords for discovery and filtering. Unlike `category` (single value), tags allow multiple labels:
+Keywords for discovery, filtering, and grouping:
 
 ```yaml
 tags:
@@ -238,12 +227,13 @@ tags:
 ```
 
 Tags help with:
+- **Grouping**: Organize validators by domain (e.g., `security`, `quality`, `docs`)
 - **Discovery**: Finding validators by keyword search
 - **Filtering**: Running subsets of validators (e.g., all `security` tagged)
-- **Organization**: Grouping related validators across categories
 
 Recommended tag conventions:
 - Use lowercase, hyphenated names
+- Include the primary domain as the first tag (`security`, `quality`, `testing`, `docs`)
 - Include the problem domain (`sql-injection`, `xss`, `secrets`)
 - Include the solution type (`blocking`, `warning`, `audit`)
 - Include language/framework when specific (`typescript`, `react`, `node`)
@@ -343,8 +333,8 @@ trigger: PostToolUse
 match:
   tools: [Write, Edit]
   files: ["*.ts", "*.tsx", "*.js", "*.jsx"]
-category: quality
 tags:
+  - quality
   - console
   - logging
   - cleanup
@@ -393,8 +383,8 @@ severity: error
 trigger: PostToolUse
 match:
   tools: [Write, Edit]
-category: security
 tags:
+  - security
   - secrets
   - credentials
   - api-keys
@@ -447,8 +437,8 @@ severity: error
 trigger: PreToolUse
 match:
   tools: [Bash]
-category: security
 tags:
+  - security
   - bash
   - commands
   - destructive
@@ -499,8 +489,8 @@ name: tests-must-pass
 description: Ensures all tests pass before the agent stops working. Forces the agent to continue if tests are failing.
 severity: error
 trigger: Stop
-category: testing
 tags:
+  - testing
   - tests
   - ci
   - blocking

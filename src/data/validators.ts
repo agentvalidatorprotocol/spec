@@ -8,7 +8,7 @@ export const validators: Validator[] = [
     description: 'Detect hardcoded secrets, API keys, and credentials',
     severity: 'error',
     trigger: 'PostToolUse',
-    category: 'security',
+    tags: ['security', 'secrets', 'credentials', 'api-keys'],
     filePatterns: ['*'],
     rules: ['api-keys', 'passwords', 'aws-credentials', 'private-keys', 'connection-strings'],
     autoFix: false,
@@ -19,7 +19,7 @@ export const validators: Validator[] = [
     description: 'Prevent use of eval(), Function(), and similar dangerous functions',
     severity: 'error',
     trigger: 'PostToolUse',
-    category: 'security',
+    tags: ['security', 'javascript', 'eval'],
     filePatterns: ['*.js', '*.ts', '*.jsx', '*.tsx'],
     rules: ['no-eval', 'no-function-constructor', 'no-implied-eval'],
     autoFix: false,
@@ -30,7 +30,7 @@ export const validators: Validator[] = [
     description: 'Detect potential SQL injection vulnerabilities',
     severity: 'error',
     trigger: 'PostToolUse',
-    category: 'security',
+    tags: ['security', 'sql', 'injection', 'database'],
     filePatterns: ['*.js', '*.ts', '*.py', '*.php'],
     rules: ['parameterized-queries', 'no-string-concat', 'orm-usage'],
     autoFix: false,
@@ -43,7 +43,7 @@ export const validators: Validator[] = [
     description: 'Remove console.log statements from production code',
     severity: 'warn',
     trigger: 'PostToolUse',
-    category: 'quality',
+    tags: ['quality', 'console', 'logging', 'cleanup'],
     filePatterns: ['*.js', '*.ts', '*.jsx', '*.tsx'],
     rules: ['no-console-log', 'no-console-warn', 'no-console-error'],
     autoFix: true,
@@ -54,7 +54,7 @@ export const validators: Validator[] = [
     description: 'Ensure functions stay under a configurable line limit',
     severity: 'warn',
     trigger: 'PostToolUse',
-    category: 'quality',
+    tags: ['quality', 'complexity', 'maintainability'],
     filePatterns: ['*.js', '*.ts', '*.jsx', '*.tsx', '*.py'],
     rules: ['max-lines-per-function'],
     autoFix: false,
@@ -66,7 +66,7 @@ export const validators: Validator[] = [
     description: 'Check cyclomatic complexity of functions',
     severity: 'warn',
     trigger: 'PostToolUse',
-    category: 'quality',
+    tags: ['quality', 'complexity', 'maintainability'],
     filePatterns: ['*.js', '*.ts', '*.jsx', '*.tsx', '*.py'],
     rules: ['max-complexity', 'cognitive-complexity'],
     autoFix: false,
@@ -80,7 +80,7 @@ export const validators: Validator[] = [
     description: 'Ensure exported functions have JSDoc comments',
     severity: 'info',
     trigger: 'PostToolUse',
-    category: 'docs',
+    tags: ['docs', 'jsdoc', 'documentation'],
     filePatterns: ['*.js', '*.ts', '*.jsx', '*.tsx'],
     rules: ['require-jsdoc', 'valid-jsdoc'],
     autoFix: true,
@@ -92,7 +92,7 @@ export const validators: Validator[] = [
     description: 'Check if README reflects recent changes',
     severity: 'info',
     trigger: 'Stop',
-    category: 'docs',
+    tags: ['docs', 'readme', 'documentation'],
     filePatterns: ['README.md', 'README.rst'],
     rules: ['readme-exists', 'readme-current'],
     autoFix: false,
@@ -106,18 +106,20 @@ export const validators: Validator[] = [
     description: 'Verify test coverage meets thresholds',
     severity: 'warn',
     trigger: 'PostToolUse',
-    category: 'testing',
+    tags: ['testing', 'coverage', 'ci'],
     filePatterns: ['*.test.ts', '*.spec.ts', '*.test.js', '*.spec.js'],
     rules: ['min-coverage', 'branch-coverage', 'function-coverage'],
     autoFix: false,
   },
 ]
 
-export const validatorsByCategory = validators.reduce((acc, validator) => {
-  if (!acc[validator.category]) {
-    acc[validator.category] = []
-  }
-  acc[validator.category].push(validator)
+export const validatorsByTag = validators.reduce((acc, validator) => {
+  validator.tags.forEach(tag => {
+    if (!acc[tag]) {
+      acc[tag] = []
+    }
+    acc[tag].push(validator)
+  })
   return acc
 }, {} as Record<string, Validator[]>)
 

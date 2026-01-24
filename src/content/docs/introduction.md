@@ -132,11 +132,11 @@ When multiple validators return errors, all violations are aggregated and presen
 
 ### Filtering
 
-Use `category` and `tags` to run subsets of validators:
+Use `tags` to run subsets of validators:
 
 ```yaml
 # Run only security validators
-category: security
+tags: [security]
 
 # Run validators with specific tags
 tags: [blocking, pre-commit]

@@ -20,7 +20,7 @@ export interface Validator {
   description: string
   severity: Severity
   trigger: Trigger
-  category: string
+  tags: string[]
   filePatterns: string[]
   rules: string[]
   autoFix: boolean

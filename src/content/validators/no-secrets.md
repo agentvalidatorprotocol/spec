@@ -8,8 +8,7 @@ Detect hardcoded secrets, API keys, and credentials in code.
 |----------|-------|
 | **Severity** | error |
 | **Trigger** | PostToolUse |
-| **Category** | security |
-| **Tags** | `secrets`, `credentials`, `api-keys`, `passwords`, `blocking` |
+| **Tags** | `security`, `secrets`, `credentials`, `api-keys`, `passwords`, `blocking` |
 | **File Patterns** | `*` |
 
 ## What It Checks
@@ -55,8 +54,8 @@ match:
     - Edit
   files:
     - "*"
-category: security
 tags:
+  - security
   - secrets
   - credentials
   - api-keys
