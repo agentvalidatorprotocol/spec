@@ -10,9 +10,9 @@ const tagInfo: Record<string, { title: string }> = {
   testing: { title: 'Testing' },
 }
 
-// Group validators by their primary tag (first tag)
+// Group validators by their primary tag (first tag), case-insensitive
 const validatorsByPrimaryTag = validators.reduce((acc, validator) => {
-  const primaryTag = validator.tags[0] || 'other'
+  const primaryTag = (validator.tags[0] || 'other').toLowerCase()
   if (!acc[primaryTag]) {
     acc[primaryTag] = []
   }
@@ -28,7 +28,7 @@ export function ValidatorsOverview() {
       {Object.entries(validatorsByPrimaryTag).map(([tag, tagValidators]) => (
         <section key={tag} className="mt-12">
           <h2 id={tag} className="text-2xl font-semibold text-primary dark:text-white mb-4">
-            {tagInfo[tag]?.title || tag}
+            {tagInfo[tag.toLowerCase()]?.title || tag}
           </h2>
 
           <div className="grid grid-cols-1 gap-4 mt-6">

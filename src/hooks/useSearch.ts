@@ -34,7 +34,7 @@ export function useSearch(query: string) {
     const navResults = flattenNav(navigation)
     const validatorResults: SearchResult[] = validators.map(v => ({
       title: v.name,
-      href: `/validators/${v.tags[0] || 'other'}/${v.name}`,
+      href: `/validators/${(v.tags[0] || 'other').toLowerCase()}/${v.name}`,
       category: 'Validators',
       excerpt: v.description,
     }))
