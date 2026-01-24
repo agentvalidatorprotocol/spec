@@ -47,10 +47,6 @@ Instructions for the validation sub-agent.
 ## Rules
 
 Specific conditions to evaluate.
-
-## Response
-
-How to format the JSON output.
 ```
 
 ## Frontmatter Fields
@@ -291,7 +287,6 @@ The markdown section after frontmatter provides instructions to the validation s
 1. **Title** - Clear name for the validator
 2. **Description** - What the validator checks
 3. **Rules** - Specific conditions to evaluate
-4. **Response format** - How to structure the JSON output
 
 ### Progressive Disclosure
 
@@ -314,10 +309,6 @@ See [references/security-rules.md](references/security-rules.md) for the complet
 - No hardcoded secrets
 - No SQL injection vulnerabilities
 - No XSS vulnerabilities
-
-## Response Format
-
-Return JSON with decision, passed, violations, and summary.
 ```
 
 ## Complete Examples
@@ -356,21 +347,6 @@ Check for console methods that should be removed before production.
 **Exceptions:**
 - Test files (`*.test.ts`, `*.spec.ts`)
 - Files in `__tests__` directories
-
-## Response Format
-
-{
-  "passed": false,
-  "reason": "1 console statement should be removed",
-  "violations": [{
-    "rule": "no-console",
-    "file": "src/utils.ts",
-    "line": 42,
-    "snippet": "console.log('debug')",
-    "suggestion": "Remove or use a proper logger"
-  }],
-  "summary": "1 console statement found"
-}
 ```
 
 ### Blocking Validator
@@ -407,24 +383,6 @@ Scan for hardcoded credentials that must never be committed.
 4. Private keys (-----BEGIN.*PRIVATE KEY-----)
 5. JWT tokens (eyJ...)
 6. Database connection strings with credentials
-
-## Response Format
-
-Since this is severity: error, include "decision": "block":
-
-{
-  "decision": "block",
-  "reason": "Security: hardcoded API key in src/config.ts:12",
-  "passed": false,
-  "violations": [{
-    "rule": "no-secrets",
-    "file": "src/config.ts",
-    "line": 12,
-    "snippet": "const API_KEY = \"sk-...\"",
-    "suggestion": "Use process.env.API_KEY"
-  }],
-  "summary": "1 hardcoded secret detected"
-}
 ```
 
 ### PreToolUse Validator
@@ -458,27 +416,6 @@ Block these patterns:
 3. `dd if=` writing to devices
 4. `chmod -R 777`
 5. `curl | bash` (piped execution)
-
-## Response Format
-
-Use PreToolUse decision control:
-
-{
-  "hookSpecificOutput": {
-    "hookEventName": "PreToolUse",
-    "permissionDecision": "deny",
-    "permissionDecisionReason": "Blocked: rm -rf with dangerous path"
-  },
-  "passed": false,
-  "violations": [{
-    "rule": "safe-commands",
-    "file": "",
-    "line": 0,
-    "snippet": "rm -rf /",
-    "suggestion": "Use specific paths, not root"
-  }],
-  "summary": "Dangerous command blocked"
-}
 ```
 
 ### Stop Validator
@@ -506,22 +443,4 @@ Verify tests pass before allowing the agent to stop.
 1. Check if any test files were modified
 2. Run the test suite
 3. Block if tests are failing
-
-## Response Format
-
-Use Stop decision control to force continuation:
-
-{
-  "decision": "block",
-  "reason": "Tests failing: 3 tests in src/utils.test.ts. Run npm test and fix before stopping.",
-  "passed": false,
-  "violations": [{
-    "rule": "tests-must-pass",
-    "file": "src/utils.test.ts",
-    "line": 45,
-    "snippet": "expect(result).toBe(true)",
-    "suggestion": "Fix the failing assertion"
-  }],
-  "summary": "3 tests failing"
-}
 ```

@@ -19,7 +19,6 @@ export const navigation: NavItem[] = [
     title: 'Reference',
     children: [
       { title: 'VALIDATOR.md Schema', href: '/reference/schema' },
-      { title: 'Response Format', href: '/reference/response-format' },
     ],
   },
   {

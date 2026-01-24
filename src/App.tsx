@@ -6,7 +6,6 @@ import { Footer } from '@/components/layout/Footer'
 // Pages
 import { Home } from '@/pages/Home'
 import { GettingStarted } from '@/pages/docs/GettingStarted'
-import { Quickstart } from '@/pages/docs/Quickstart'
 import { ValidatorsOverview } from '@/pages/validators/Overview'
 import { ValidatorsLifecycle } from '@/pages/validators/Lifecycle'
 import { ValidatorsTriggers } from '@/pages/validators/Triggers'
@@ -48,7 +47,6 @@ export default function App() {
 
       {/* Reference */}
       <Route path="/reference/schema" element={<DocsLayout><SchemaReference /></DocsLayout>} />
-      <Route path="/reference/response-format" element={<DocsLayout><Quickstart /></DocsLayout>} />
 
       {/* Examples */}
       <Route path="/validators/overview" element={<DocsLayout><ValidatorsOverview /></DocsLayout>} />

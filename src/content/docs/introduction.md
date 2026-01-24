@@ -25,7 +25,7 @@ AVP is a specification for validators — automated checks that run when an AI a
 - **YAML frontmatter** with trigger conditions and severity
 - **Markdown prompt** that instructs a sub-agent what to check
 
-When the agent makes changes, validators run and return a standardized JSON response indicating pass, warn, or error with details about any violations.
+When the agent makes changes, validators run and report pass, warn, or error with details about any violations.
 
 ## Example Validator
 
@@ -49,10 +49,6 @@ Check for hardcoded secrets in the modified code.
 2. Passwords (password=, passwd, pwd)
 3. AWS credentials
 4. Private keys (-----BEGIN.*PRIVATE KEY-----)
-
-## Response
-
-Return JSON with decision, reason, passed, violations, and summary.
 ```
 
 ## How It Works
@@ -63,7 +59,7 @@ The validation flow integrates with agent hook systems:
 2. **Hook fires** — The agent's hook system (e.g., `PostToolUse`) triggers after the tool completes
 3. **Validators match** — Each validator checks if its trigger conditions match (tool type, file patterns)
 4. **Sub-agent validates** — Matching validators spawn a sub-agent with the VALIDATOR.md prompt to check the changes
-5. **Response returned** — Validators return JSON with status and violation details
+5. **Results reported** — The framework reports any violations found
 
 ## Severity Levels
 

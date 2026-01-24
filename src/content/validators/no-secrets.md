@@ -74,10 +74,6 @@ You are a security validator. After the agent edits code, check for hardcoded se
 3. **AWS Credentials** - Look for AWS access key IDs and secret keys
 4. **Private Keys** - Look for `-----BEGIN.*PRIVATE KEY-----`
 5. **Connection Strings** - Database URLs with embedded credentials
-
-## Response Format
-
-Return JSON with decision, reason, passed, violations, and summary.
 ```
 
 ## Related Validators
