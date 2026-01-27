@@ -34,7 +34,7 @@ After the tool completes, the agent fires the appropriate hook event. Most valid
 
 ### 3. Matching Validators Run
 
-All validators in the validators directory are checked against the event. Each validator matches based on:
+All validators in the validator directories (`.avp/validators/` and `~/.avp/validators/`) are checked against the event. Each validator matches based on:
 
 - **Trigger type**: Does the hook event match (e.g., `PostToolUse`, `Stop`)?
 - **Tool matcher**: Does the tool match (e.g., Write, Edit)?
@@ -81,10 +81,20 @@ flowchart TB
     Out -->|Any Error| Block[Agent Must Fix]
 ```
 
-Each sub-agent receives:
-- The VALIDATOR.md prompt content
-- Context about the tool call (file path, changes, etc.)
-- Any hook-specific input data
+Each sub-agent receives the VALIDATOR.md prompt content along with context about the event. Implementations should provide relevant context in natural language, including:
+
+- **Tool name**: Which tool was called (e.g., Write, Edit, Bash)
+- **File path**: The full path of the file being modified (if applicable)
+- **File content or diff**: The changes made or relevant file content
+- **Tool parameters**: Any additional parameters passed to the tool
+
+The sub-agent processes this context and returns its assessment in natural language, including:
+
+- A decision: `allow` (passed) or `deny`/`block` (failed)
+- Details about any violations found
+- Suggestions for how to fix issues
+
+When validation fails, the validator's **severity** determines the consequence (see [Severity Levels](/validators/severity)).
 
 ### 5. Results Aggregated
 
@@ -92,14 +102,29 @@ Results from all validators are collected. The aggregation rules:
 
 | Individual Results | Aggregated Outcome | Behavior |
 |-------------------|-------------------|----------|
-| All `passed: true` | **PASSED** | Continue normally |
-| Any `passed: false` with `severity: warn` | **WARNED** | Log warnings, continue |
-| Any `passed: false` with `severity: error` | **ERROR** | Block until fixed |
+| All validators pass | **PASSED** | Continue normally |
+| Any validator fails with `warn` severity | **WARNED** | Log warnings, continue |
+| Any validator fails with `error` severity | **ERROR** | Block until fixed |
 
 When multiple validators fail:
 - All violations are combined into a single report
 - The agent sees all issues at once, not one at a time
 - This enables efficient batch fixing
+
+## Error Handling
+
+When a validator fails to execute (timeout, crash, malformed YAML, missing files), implementations should **fail closed** — treat the error as a blocking violation.
+
+This fail-closed behavior ensures that:
+- Broken validators don't silently allow bad code through
+- Developers are immediately aware of validator issues
+- Security-critical checks aren't bypassed due to configuration errors
+
+Common error conditions:
+- **Timeout**: Sub-agent exceeds the configured timeout
+- **Malformed YAML**: Invalid frontmatter in VALIDATOR.md
+- **Missing references**: Referenced files don't exist
+- **Sub-agent failure**: The validation sub-agent crashes or returns invalid output
 
 ## Best Practices
 

@@ -4,6 +4,30 @@ Triggers determine when a validator runs. They correspond to agent hook events a
 
 > **Note**: Triggers map directly to [Claude Code hook events](https://code.claude.com/docs/en/hooks#hook-events). The schema is designed for exact compatibility.
 
+## Decision Control
+
+Validators return decisions in natural language. The sub-agent's response should clearly indicate one of:
+
+| Decision | Meaning |
+|----------|---------|
+| **allow** | Validation passed — no issues found |
+| **deny** | Validation failed — issues found |
+| **ask** | Prompt the user for confirmation |
+| **block** | Validation failed — issues found |
+
+The framework parses the sub-agent's natural language response to determine the decision. For example, a response might say "DENY - this command would delete system files" or "ALLOW - the code looks safe".
+
+**How decisions and severity interact**:
+- The sub-agent decides if validation **passed** (allow) or **failed** (deny/block)
+- When validation fails, the validator's **severity** determines the consequence:
+  - `error` severity → block until fixed
+  - `warn` severity → log warning, continue
+  - `info` severity → log only
+
+**Pre vs Post behavior**:
+- **PreToolUse**: `deny` prevents the action entirely (tool doesn't execute)
+- **PostToolUse**: The tool has already executed. If validation fails with `error` severity, the agent must fix the issues before continuing.
+
 ## Hook Lifecycle
 
 Hooks fire at specific points during an agent session:
@@ -194,6 +218,8 @@ triggerMatcher: startup
 
 ## Matchers
 
+When both `tools` and `files` matchers are specified, **both must match** (AND logic). If a tool doesn't operate on a file (e.g., `Bash`), the `files` matcher is ignored.
+
 ### Tool Matchers
 
 For tool-related triggers (`PreToolUse`, `PostToolUse`, `PostToolUseFailure`, `PermissionRequest`):
@@ -205,7 +231,9 @@ match:
   tools: ["Write|Edit"]            # Regex pattern
 ```
 
-Common tool names:
+Tool names shown here are Claude Code specific. Use regex patterns like `.*edit.*` or `.*write.*` to match tools in other agents.
+
+Common Claude Code tool names:
 - `Write`, `Edit`, `MultiEdit` - File operations
 - `Bash` - Shell commands
 - `Read`, `Glob`, `Grep` - File reading/search
@@ -215,12 +243,14 @@ Common tool names:
 
 ### File Matchers
 
-Filter by file path patterns:
+Filter by file path patterns. Patterns are matched against the **full path**, not just the filename.
 
 ```yaml
 match:
   files: ["*.ts", "*.tsx", "src/**/*.js"]
 ```
+
+The pattern `*.ts` will match `src/utils/helper.ts`.
 
 ### Trigger Matchers
 

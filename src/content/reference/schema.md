@@ -1,18 +1,27 @@
 # VALIDATOR.md Schema
 
+**AVP 1.0**
+
 The VALIDATOR.md file format defines a validator using YAML frontmatter and Markdown content. The format is designed to be compatible with [Claude Code hooks](https://code.claude.com/docs/en/hooks) and follows conventions from [Agent Skills](https://agentskills.io/specification).
 
 ## Directory Structure
+
+Validators are discovered from two locations:
+
+1. **Project validators**: `.avp/validators/` in the project root
+2. **User validators**: `~/.avp/validators/` in the user's home directory
+
+If the same validator name exists in both locations, the project validator takes precedence.
 
 A validator can be a single file or a directory:
 
 ```
 # Simple: single file
-validators/
+.avp/validators/
 └── no-secrets.md
 
 # Complex: directory with supporting files
-validators/
+.avp/validators/
 └── no-secrets/
     ├── VALIDATOR.md       # Required
     ├── scripts/           # Optional: executable scripts
@@ -128,7 +137,7 @@ Common triggers:
 | `match.tools` | string[] | Tool names or regex patterns |
 | `match.files` | string[] | Glob patterns for files |
 | `triggerMatcher` | string | Matcher for lifecycle triggers |
-| `tags` | string[] | Keywords for discovery, filtering, and grouping |
+| `tags` | string[] | Keywords for organization and discovery |
 | `once` | boolean | Run only once per session (default: false) |
 | `timeout` | number | Execution timeout in seconds (default: 60) |
 | `license` | string | License name or reference |
@@ -137,7 +146,12 @@ Common triggers:
 
 #### match
 
-Filters which tool calls trigger the validator:
+Filters which tool calls trigger the validator.
+
+**Matching rules**:
+- When both `tools` and `files` are specified, **both must match** (AND logic)
+- File patterns are matched against the **full path** (e.g., `*.ts` matches `src/utils/helper.ts`)
+- If the tool doesn't operate on a file (e.g., `Bash`), the `files` matcher is ignored and only `tools` is checked
 
 ```yaml
 # Match specific tools
@@ -152,7 +166,7 @@ match:
 match:
   files: ["*.ts", "*.tsx", "src/**/*.js"]
 
-# Combine both
+# Combine both (AND logic: tool must match AND file must match)
 match:
   tools: [Write, Edit]
   files: ["*.ts", "*.tsx"]
@@ -212,7 +226,7 @@ timeout: 30  # 30 second timeout
 
 #### tags
 
-Keywords for discovery, filtering, and grouping:
+Keywords for organization and discovery:
 
 ```yaml
 tags:
@@ -223,15 +237,13 @@ tags:
 ```
 
 Tags help with:
-- **Grouping**: Organize validators by domain (e.g., `security`, `quality`, `docs`)
-- **Discovery**: Finding validators by keyword search
-- **Filtering**: Running subsets of validators (e.g., all `security` tagged)
+- **Organization**: Group validators by domain (e.g., `security`, `quality`, `docs`)
+- **Discovery**: Find validators by keyword search
 
 Recommended tag conventions:
 - Use lowercase, hyphenated names
 - Include the primary domain as the first tag (`security`, `quality`, `testing`, `docs`)
 - Include the problem domain (`sql-injection`, `xss`, `secrets`)
-- Include the solution type (`blocking`, `warning`, `audit`)
 - Include language/framework when specific (`typescript`, `react`, `node`)
 
 #### compatibility

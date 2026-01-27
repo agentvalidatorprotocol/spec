@@ -1,6 +1,6 @@
 # Introduction
 
-The Agent Validator Protocol (AVP) defines how AI coding agents validate their own output through automated quality checks.
+The Agent Validator Protocol (AVP) defines how AI coding agents validate their own output through automated quality checks. This document describes **AVP 1.0**.
 
 ## The Problem
 
@@ -32,6 +32,7 @@ When the agent makes changes, validators run and report pass, warn, or error wit
 ```yaml
 ---
 name: no-secrets
+description: Detects hardcoded secrets like API keys and passwords in source code.
 severity: error
 trigger: PostToolUse
 match:
@@ -77,8 +78,13 @@ AVP is designed for projects to use many validators simultaneously. Validators a
 
 ### Directory Organization
 
+Validators are discovered from two locations:
+
+1. **Project validators**: `.avp/validators/` in the project root
+2. **User validators**: `~/.avp/validators/` in the user's home directory
+
 ```
-.validators/
+.avp/validators/
 ├── no-secrets.md           # Simple single-file validator
 ├── no-console.md
 ├── require-tests.md
@@ -92,13 +98,15 @@ AVP is designed for projects to use many validators simultaneously. Validators a
 ```
 
 Validators can be:
-- **Single files**: `name.md` in the validators directory
+- **Single files**: `name.md` in a validators directory
 - **Directories**: `name/VALIDATOR.md` with optional `scripts/`, `references/`, `assets/`
 - **Nested**: Organized in subdirectories by team, category, or concern
 
 ### Discovery
 
-An AVP-compatible agent scans the validators directory and loads all valid VALIDATOR.md files. Each validator's `name` must be unique across the entire set.
+An AVP-compatible agent scans both validator directories and loads all valid VALIDATOR.md files. Each validator's `name` must be unique across the entire set.
+
+**Precedence**: If the same validator name exists in both locations, the project validator (`.avp/validators/`) takes precedence over the user validator (`~/.avp/validators/`).
 
 ### Parallel Execution
 
@@ -125,20 +133,3 @@ Results from all validators are collected and the most severe outcome determines
 | Any error | **ERROR** — agent must fix before continuing |
 
 When multiple validators return errors, all violations are aggregated and presented to the agent together.
-
-### Filtering
-
-Use `tags` to run subsets of validators:
-
-```yaml
-# Run only security validators
-tags: [security]
-
-# Run validators with specific tags
-tags: [blocking, pre-commit]
-```
-
-This enables workflows like:
-- **Fast feedback**: Run only `error` severity validators during development
-- **Pre-commit**: Run all `blocking` tagged validators before committing
-- **Full audit**: Run all validators including `info` severity for comprehensive reports

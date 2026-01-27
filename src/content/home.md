@@ -1,5 +1,7 @@
 # Agent Validator Protocol
 
+**Version 1.0**
+
 AI agents make mistakes. AVP lets you constantly review the work of an agent — catching security issues, enforcing quality standards, and ensuring your conventions are followed.
 
 ## Why AVP?
