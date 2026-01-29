@@ -5,6 +5,8 @@ title: Installation
 
 # Installation
 
+AVP lets you write validation rules for AI coding agents in plain English. Instead of shell scripts or custom code, you describe what to check — and a sub-agent enforces it. Catch hardcoded secrets, enforce code standards, require tests, or anything else you can describe in a prompt.
+
 Install the AVP CLI using Homebrew:
 
 ```bash
