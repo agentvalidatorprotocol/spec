@@ -14,8 +14,8 @@ const config: Config = {
   url: process.env.URL || 'https://agentvalidatorprotocol.com',
   baseUrl: '/',
 
-  organizationName: 'swissarmyhammer',
-  projectName: 'avp',
+  organizationName: 'agentvalidatorprotocol',
+  projectName: 'spec',
 
   onBrokenLinks: 'throw',
 
@@ -37,7 +37,7 @@ const config: Config = {
         docs: {
           sidebarPath: './sidebars.ts',
           routeBasePath: '/',
-          editUrl: 'https://github.com/swissarmyhammer/avp/tree/main/spec/',
+          editUrl: 'https://github.com/agentvalidatorprotocol/spec/tree/main/spec/',
         },
         blog: false,
         theme: {
@@ -61,7 +61,7 @@ const config: Config = {
           label: 'Documentation',
         },
         {
-          href: 'https://github.com/swissarmyhammer/avp',
+          href: 'https://github.com/agentvalidatorprotocol/spec',
           label: 'GitHub',
           position: 'right',
         },
@@ -92,7 +92,7 @@ const config: Config = {
           items: [
             {
               label: 'GitHub',
-              href: 'https://github.com/swissarmyhammer/avp',
+              href: 'https://github.com/agentvalidatorprotocol/spec',
             },
           ],
         },
