@@ -22,10 +22,20 @@ Navigate to your project directory and run:
 
 ```bash
 cd your-project
-avp install project
+avp init
 ```
 
 This creates the `.avp/validators/` directory with a starter set of validators. Your agent will now run these validators automatically when it modifies code.
+
+## Removing AVP
+
+To remove AVP from a project:
+
+```bash
+avp deinit
+```
+
+This removes the `.avp/` directory and any agent integrations.
 
 ## Supported Agents
 
