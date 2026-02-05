@@ -7,7 +7,11 @@ title: VALIDATOR.md Schema
 
 **AVP 1.0**
 
-The VALIDATOR.md file format defines a validator using YAML frontmatter and Markdown content. The format is designed to be compatible with [Claude Code hooks](https://code.claude.com/docs/en/hooks) and follows conventions from [Agent Skills](https://agentskills.io/specification).
+The VALIDATOR.md file format defines validators using YAML frontmatter and Markdown content. Validators can be:
+- **Single rules**: One validation check per file
+- **RuleSets**: Logical groupings of related rules in a folder structure
+
+The format is designed to be compatible with [Claude Code hooks](https://code.claude.com/docs/en/hooks) and follows conventions from [Agent Skills](https://agentskills.io/specification).
 
 ## Directory Structure
 
@@ -18,32 +22,70 @@ Validators are discovered from two locations:
 
 If the same validator name exists in both locations, the project validator takes precedence.
 
-A validator can be a single file or a directory:
+### Validator Structure
+
+All validators are **RuleSets** — directories containing a VALIDATOR.md file and one or more rule files:
 
 ```
-# Simple: single file
 .avp/validators/
-└── no-secrets.md
-
-# Complex: directory with supporting files
-.avp/validators/
-└── no-secrets/
-    ├── VALIDATOR.md       # Required
-    ├── scripts/           # Optional: executable scripts
-    │   └── scan-secrets.py
-    ├── references/        # Optional: additional docs
-    │   └── secret-patterns.md
-    └── assets/            # Optional: templates, data
-        └── patterns.json
+├── security-rules/
+│   ├── VALIDATOR.md       # Required: RuleSet metadata
+│   ├── README.md          # Optional: detailed documentation
+│   ├── favicon.png        # Optional: icon (16x16, 32x32, or 64x64)
+│   ├── rules/             # Required: individual rule files
+│   │   ├── no-secrets.md
+│   │   ├── no-sql-injection.md
+│   │   ├── no-xss.md
+│   │   ├── injection/     # Subdirectories for organization
+│   │   │   ├── command-injection.md
+│   │   │   └── path-traversal.md
+│   │   └── crypto/
+│   │       ├── weak-crypto.md
+│   │       └── insecure-random.md
+│   ├── scripts/           # Optional: shared scripts
+│   │   └── detect.py
+│   ├── references/        # Optional: additional docs
+│   │   └── owasp-guidelines.md
+│   └── assets/            # Optional: templates, data
+│       └── patterns.json
+└── code-quality/
+    ├── VALIDATOR.md
+    ├── README.md
+    ├── rules/
+    │   ├── no-console.md
+    │   ├── require-tests.md
+    │   └── complexity/
+    │       └── cyclomatic-complexity.md
+    └── scripts/
+        └── check-coverage.sh
 ```
 
-## File Format
+**Required files**:
+- `VALIDATOR.md` — RuleSet metadata and configuration (for agents)
+- `rules/*.md` — At least one rule file
 
-```markdown
+**Optional files**:
+- `README.md` — User-facing documentation (installation, usage, configuration)
+- `favicon.png` — Visual icon for decoration
+- `scripts/` — Executable helper scripts
+- `references/` — Additional reference documentation
+- `assets/` — Templates, patterns, or data files
+
+**File purposes**:
+- **VALIDATOR.md** — Loaded by agents, contains metadata and prompt instructions
+- **README.md** — For humans browsing directories, explains how to use the RuleSet
+
+See [RuleSets](../core-concepts/rulesets) for detailed information about organizing rules.
+
+## VALIDATOR.md Format (RuleSet Level)
+
+The VALIDATOR.md file defines metadata and common settings for a RuleSet:
+
+```yaml
 ---
 name: validator-name
-description: What this validator checks and when to use it.
-severity: error | warn | info
+description: What this RuleSet validates.
+version: "1.0.0"
 trigger: PostToolUse
 match:
   tools: [Write, Edit]
@@ -51,27 +93,47 @@ match:
 tags:
   - security
   - keyword1
-  - keyword2
+favicon: favicon.png
 ---
 
 # Validator Title
 
-Instructions for the validation sub-agent.
+Overview of the RuleSet and its purpose.
 
-## Rules
-
-Specific conditions to evaluate.
+All rules are discovered automatically from the `rules/` directory.
 ```
 
-## Frontmatter Fields
+## Rule File Format (Individual Rule)
+
+Each rule file in `rules/` contains its own validation logic:
+
+```yaml
+---
+name: rule-name
+description: What this specific rule checks.
+severity: error | warn | info
+match:
+  files: ["*.ts"]
+---
+
+# Rule Title
+
+Detailed instructions for the validation sub-agent.
+
+## Conditions
+
+Specific patterns and conditions to evaluate.
+```
+
+## VALIDATOR.md Frontmatter (RuleSet Level)
 
 ### Required Fields
 
 | Field | Type | Constraints | Description |
 |-------|------|-------------|-------------|
 | `name` | string | 1-64 chars, kebab-case | Unique identifier for the validator |
-| `description` | string | 1-1024 chars | What this validator checks and when to use it |
-| `severity` | string | `info`, `warn`, `error` | Determines blocking behavior |
+| `description` | string | 1-1024 chars | What this RuleSet validates |
+| `version` | string | Semver format | Version number (e.g., "1.0.0") |
 | `trigger` | string | Hook event name | When the validator runs |
 
 #### name
@@ -114,19 +176,61 @@ Poor example:
 description: Checks for secrets.
 ```
 
-#### severity
+#### version
 
-Determines behavior when violations are found:
+The version of the validator using [Semantic Versioning](https://semver.org/):
 
-| Value | Behavior |
-|-------|----------|
-| `info` | Log result, continue execution |
-| `warn` | Notify user, continue execution |
-| `error` | Block until violations are fixed |
+```yaml
+version: "1.0.0"    # Initial release
+version: "1.2.0"    # Added new rules
+version: "2.0.0"    # Breaking changes
+```
+
+**Format**: `MAJOR.MINOR.PATCH`
+- **MAJOR**: Incompatible changes (e.g., removed rules, changed behavior)
+- **MINOR**: Added functionality (e.g., new rules)
+- **PATCH**: Bug fixes and improvements
 
 #### trigger
 
 The hook event that activates this validator. See [Triggers Reference](../core-concepts/triggers) for full list.
+
+### Rule Discovery
+
+Rules are discovered automatically by convention. All `.md` files in the `rules/` directory and its subdirectories are loaded as rules.
+
+```
+validator-name/
+├── VALIDATOR.md       # Overall metadata
+└── rules/
+    ├── rule-one.md    # Automatically discovered
+    ├── rule-two.md    # Automatically discovered
+    ├── security/      # Subdirectories allowed
+    │   ├── no-secrets.md
+    │   └── no-xss.md
+    └── quality/
+        └── no-console.md
+```
+
+**Discovery rules**:
+- All files with `.md` extension in `rules/` and subdirectories are loaded
+- Subdirectories can be used for organization (e.g., `security/`, `quality/`)
+- Each rule must have valid YAML frontmatter
+- Rule names must be unique within the RuleSet
+- Rules are executed in **lexicographical order** by file path
+
+**Execution order example**:
+```
+rules/
+├── 01-secrets.md           # Runs 1st
+├── 02-sql-injection.md     # Runs 2nd
+├── security/
+│   ├── crypto.md           # Runs 3rd (rules/security/crypto.md)
+│   └── xss.md              # Runs 4th (rules/security/xss.md)
+└── zzz-final-check.md      # Runs last
+```
+
+Use filename prefixes (01-, 02-, etc.) if order matters.
 
 Common triggers:
 - `PostToolUse` - After successful tool execution (most common)
@@ -138,11 +242,12 @@ Common triggers:
 
 | Field | Type | Description |
 |-------|------|-------------|
-| `match` | object | Conditions for when to run |
+| `match` | object | Default conditions for when to run (inherited by rules) |
 | `match.tools` | string[] | Tool names or regex patterns |
 | `match.files` | string[] | Glob patterns for files |
 | `triggerMatcher` | string | Matcher for lifecycle triggers |
 | `tags` | string[] | Keywords for organization and discovery |
+| `favicon` | string | Path to icon file (e.g., `favicon.png`) |
 | `once` | boolean | Run only once per session (default: false) |
 | `timeout` | number | Execution timeout in seconds (default: 60) |
 | `license` | string | License name or reference |
@@ -251,6 +356,28 @@ Recommended tag conventions:
 - Include the problem domain (`sql-injection`, `xss`, `secrets`)
 - Include language/framework when specific (`typescript`, `react`, `node`)
 
+#### favicon
+
+Optional path to an icon file for visual identification in UIs:
+
+```yaml
+favicon: favicon.png
+favicon: assets/icon.svg
+```
+
+**Recommendations**:
+- **Format**: PNG or SVG
+- **Size**: 16x16, 32x32, or 64x64 pixels (or larger for high-DPI displays)
+- **Location**: Validator root directory or `assets/` subdirectory
+- **File size**: Keep under 10KB for fast loading
+- **Design**: Use clear, recognizable iconography that represents the RuleSet's purpose
+
+The favicon appears in:
+- Validator selection UIs
+- Documentation and catalogs
+- IDE integrations
+- Dashboard displays
+
 #### compatibility
 
 Describes environment requirements:
@@ -268,6 +395,82 @@ metadata:
   author: your-org
   version: "1.0"
   source: https://github.com/your-org/validators
+```
+
+## Rule File Frontmatter (Individual Rule Level)
+
+Each rule file in the `rules/` directory has its own frontmatter defining specific validation behavior.
+
+### Required Fields
+
+| Field | Type | Constraints | Description |
+|-------|------|-------------|-------------|
+| `name` | string | 1-64 chars, kebab-case | Unique identifier for the rule |
+| `description` | string | 1-1024 chars | What this rule checks |
+| `severity` | string | `info`, `warn`, `error` | Determines blocking behavior |
+
+#### name
+
+Follows the same conventions as VALIDATOR.md names:
+- Must be 1-64 characters
+- Lowercase letters, numbers, and hyphens only
+- Must not start or end with hyphen
+- Must be unique within the RuleSet
+
+```yaml
+name: no-secrets
+name: sql-injection-check
+name: require-tests
+```
+
+#### description
+
+Describes what this specific rule validates:
+
+```yaml
+description: Detects hardcoded API keys, passwords, and tokens in source code. Blocks commits containing credentials.
+```
+
+#### severity
+
+Determines behavior when this rule finds violations:
+
+| Value | Behavior |
+|-------|----------|
+| `info` | Log result, continue execution |
+| `warn` | Notify user, continue execution |
+| `error` | Block until violations are fixed |
+
+Different rules in the same RuleSet can have different severities:
+
+```yaml
+# rules/no-secrets.md
+severity: error      # Blocking
+
+# rules/no-console.md
+severity: warn       # Non-blocking
+```
+
+### Optional Fields
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `match` | object | Override parent match conditions |
+| `match.files` | string[] | Glob patterns for files |
+| `tags` | string[] | Additional tags beyond parent |
+| `timeout` | number | Override parent timeout |
+
+Rules inherit settings from the parent VALIDATOR.md but can override them:
+
+```yaml
+# Parent VALIDATOR.md
+match:
+  tools: [Write, Edit]
+  files: ["*.ts", "*.tsx"]
+
+# Rule can narrow the match
+match:
+  files: ["src/**/*.ts"]  # Only src directory
 ```
 
 ## Trigger Values
@@ -330,134 +533,160 @@ See [references/security-rules.md](references/security-rules.md) for the complet
 
 ## Complete Examples
 
-### Simple Validator
+### Security RuleSet
 
+**VALIDATOR.md**:
 ```yaml
 ---
-name: no-console
-description: Detects console.log statements that should not be committed to production code. Apply to all JavaScript and TypeScript file modifications.
-severity: warn
+name: security-rules
+description: Comprehensive security validation for code changes. Detects secrets, SQL injection, and XSS vulnerabilities.
+version: "1.0.0"
 trigger: PostToolUse
 match:
   tools: [Write, Edit]
-  files: ["*.ts", "*.tsx", "*.js", "*.jsx"]
+tags:
+  - security
+  - owasp
+favicon: favicon.png
+metadata:
+  author: security-team
+  source: https://github.com/example/validators
+---
+
+# Security Rules
+
+This RuleSet validates code changes against common security vulnerabilities.
+
+Rules are automatically discovered from the `rules/` directory.
+```
+
+**rules/no-secrets.md**:
+```yaml
+---
+name: no-secrets
+description: Detects hardcoded secrets like API keys, passwords, and tokens.
+severity: error
+---
+
+# No Secrets Rule
+
+Scan for hardcoded credentials that must never be committed.
+
+## Patterns
+
+1. API keys: `sk-*`, `api_key=`, `apiKey:`
+2. Passwords: `password=`, `passwd=`, `pwd=`
+3. AWS credentials: `AKIA*`, `aws_secret`
+4. Private keys: `-----BEGIN.*PRIVATE KEY-----`
+5. JWT tokens: `eyJ...`
+```
+
+**rules/no-sql-injection.md**:
+```yaml
+---
+name: no-sql-injection
+description: Detects SQL injection vulnerabilities from string concatenation.
+severity: error
+match:
+  files: ["**/*.ts", "**/*.js", "**/*.py"]
+---
+
+# SQL Injection Prevention
+
+Check for unsafe SQL query construction.
+
+## Patterns
+
+1. String concatenation in SQL: `"SELECT * FROM " + table`
+2. Template literals with user input: `\`SELECT * FROM \${table}\``
+3. Unparameterized queries
+
+## Safe Alternatives
+
+Use parameterized queries or ORM query builders.
+```
+
+**rules/no-xss.md**:
+```yaml
+---
+name: no-xss
+description: Detects potential XSS vulnerabilities in frontend code.
+severity: warn
+match:
+  files: ["**/*.tsx", "**/*.jsx", "**/*.html"]
+---
+
+# XSS Prevention
+
+Check for unsafe HTML rendering patterns.
+
+## Patterns
+
+1. `dangerouslySetInnerHTML` without sanitization
+2. Direct DOM manipulation with user input
+3. Unsafe `eval()` or `Function()` calls
+```
+
+### Code Quality RuleSet
+
+**VALIDATOR.md**:
+```yaml
+---
+name: code-quality
+description: Enforces code quality standards including console cleanup and test coverage.
+version: "2.1.0"
+trigger: PostToolUse
+match:
+  tools: [Write, Edit]
+  files: ["**/*.ts", "**/*.tsx", "**/*.js", "**/*.jsx"]
 tags:
   - quality
-  - console
-  - logging
-  - cleanup
-  - javascript
-  - typescript
+  - testing
+---
+
+# Code Quality Rules
+
+Maintains code quality standards across the project.
+
+Rules are automatically loaded from `rules/`.
+```
+
+**rules/no-console.md**:
+```yaml
+---
+name: no-console
+description: Detects console.log statements in production code.
+severity: warn
 ---
 
 # No Console Statements
 
-Check for console methods that should be removed before production.
+Remove debug console calls before committing.
 
-## Rules
+## Patterns
 
-1. Flag `console.log()` calls
-2. Flag `console.warn()` calls
-3. Flag `console.error()` calls
-4. Flag `console.debug()` calls
+1. `console.log()`
+2. `console.warn()`
+3. `console.error()`
+4. `console.debug()`
 
-**Exceptions:**
-- Test files (`*.test.ts`, `*.spec.ts`)
-- Files in `__tests__` directories
+**Exceptions**: Test files and `__tests__` directories.
 ```
 
-### Blocking Validator
-
+**rules/require-tests.md**:
 ```yaml
 ---
-name: no-secrets
-description: Blocks commits containing hardcoded secrets like API keys, passwords, and tokens. Critical security validator for all file modifications.
+name: require-tests
+description: Ensures new code includes corresponding test files.
 severity: error
-trigger: PostToolUse
-match:
-  tools: [Write, Edit]
-tags:
-  - security
-  - secrets
-  - credentials
-  - api-keys
-  - passwords
-  - blocking
-metadata:
-  author: security-team
-  version: "2.0"
 ---
 
-# No Secrets Validator
+# Require Tests
 
-Scan for hardcoded credentials that must never be committed.
+New functionality must include tests.
 
 ## Rules
 
-1. API keys (sk-*, api_key=, apiKey:)
-2. Passwords (password=, passwd=, pwd=)
-3. AWS credentials (AKIA*, aws_secret)
-4. Private keys (-----BEGIN.*PRIVATE KEY-----)
-5. JWT tokens (eyJ...)
-6. Database connection strings with credentials
-```
-
-### PreToolUse Validator
-
-```yaml
----
-name: safe-commands
-description: Validates bash commands before execution to prevent destructive operations. Blocks rm -rf, format, and other dangerous commands.
-severity: error
-trigger: PreToolUse
-match:
-  tools: [Bash]
-tags:
-  - security
-  - bash
-  - commands
-  - destructive
-  - blocking
-  - pre-execution
----
-
-# Safe Commands Validator
-
-Check bash commands before execution.
-
-## Rules
-
-Block these patterns:
-1. `rm -rf /` or `rm -rf ~`
-2. `mkfs` or `format`
-3. `dd if=` writing to devices
-4. `chmod -R 777`
-5. `curl | bash` (piped execution)
-```
-
-### Stop Validator
-
-```yaml
----
-name: tests-must-pass
-description: Ensures all tests pass before the agent stops working. Forces the agent to continue if tests are failing.
-severity: error
-trigger: Stop
-tags:
-  - testing
-  - tests
-  - ci
-  - blocking
-  - stop-hook
----
-
-# Tests Must Pass
-
-Verify tests pass before allowing the agent to stop.
-
-## Rules
-
-1. Check if any test files were modified
-2. Run the test suite
-3. Block if tests are failing
+1. New files in `src/` should have corresponding test files
+2. Modified files with exported functions should have test coverage
 ```

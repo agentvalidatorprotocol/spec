@@ -5,7 +5,7 @@ import type * as Preset from '@docusaurus/preset-classic';
 const config: Config = {
   title: 'Agent Validator Protocol',
   tagline: 'Prompts as validators for AI coding agents',
-  favicon: 'img/favicon.svg',
+  favicon: 'img/favicon.png',
 
   future: {
     v4: true,
@@ -53,6 +53,10 @@ const config: Config = {
     },
     navbar: {
       title: 'AVP',
+      logo: {
+        alt: 'AVP Logo',
+        src: 'img/favicon.png',
+      },
       items: [
         {
           type: 'docSidebar',

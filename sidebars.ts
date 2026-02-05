@@ -15,6 +15,7 @@ const sidebars: SidebarsConfig = {
         'core-concepts/lifecycle',
         'core-concepts/triggers',
         'core-concepts/severity',
+        'core-concepts/rulesets',
       ],
     },
     {
@@ -25,7 +26,7 @@ const sidebars: SidebarsConfig = {
     {
       type: 'category',
       label: 'Examples',
-      items: ['examples/overview', 'examples/no-secrets'],
+      items: ['examples/overview', 'examples/no-secrets', 'examples/security-ruleset'],
     },
   ],
 };

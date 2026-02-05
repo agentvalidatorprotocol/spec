@@ -5,7 +5,7 @@ title: Severity Levels
 
 # Severity Levels
 
-Severity levels control how the agent responds to validator violations. Choose the right level to balance enforcement with developer experience.
+Severity levels control how the agent responds to rule violations. Each rule in a RuleSet specifies its own severity, allowing mixed blocking and non-blocking validation within the same validator.
 
 ## Available Levels
 
@@ -61,14 +61,30 @@ When in doubt, start with `warn` severity. You can always escalate to `error` if
 
 ## Configuring Severity
 
-Severity is set in the VALIDATOR.md frontmatter:
+Severity is set in each rule file's frontmatter:
 
 ```yaml
+# rules/no-secrets.md
 ---
 name: no-secrets
+description: Detects hardcoded secrets
 severity: error
-trigger: PostToolUse
 ---
 ```
+
+### Mixed Severities
+
+Different rules within the same RuleSet can have different severities:
+
+```
+security-rules/
+├── VALIDATOR.md
+└── rules/
+    ├── no-secrets.md        # severity: error (blocking)
+    ├── no-sql-injection.md  # severity: error (blocking)
+    └── no-xss.md           # severity: warn (non-blocking)
+```
+
+This allows you to block critical issues while only warning about less severe ones.
 
 Agent implementations may allow users to override severity levels through configuration when needed.

@@ -51,9 +51,12 @@ Multiple validators can match the same event. For example, a `Write` to `src/api
 - `no-console` (matches *.ts files)
 - `api-standards` (matches src/api/** files)
 
-### 4. Parallel Evaluation
+### 4. Validator Execution
 
-All matching validators run concurrently, each spawning its own sub-agent:
+**Two-level execution model:**
+
+1. **Validators run in parallel** — Independent RuleSets execute concurrently
+2. **Rules run sequentially** — Within each validator, rules execute in lexicographical order by file path
 
 ```mermaid
 flowchart TB
@@ -65,16 +68,16 @@ flowchart TB
 
     F --> P1 & P2 & P3
 
-    subgraph Parallel["Concurrent Execution"]
+    subgraph Parallel["Validators Run in PARALLEL"]
         direction TB
-        subgraph V1["no-secrets"]
-            P1[Sub-agent 1] --> R1[Result 1]
+        subgraph V1["security-rules"]
+            P1[Rules run sequentially:<br/>1. no-secrets.md<br/>2. sql-injection.md<br/>3. xss.md] --> R1[Result 1]
         end
-        subgraph V2["no-console"]
-            P2[Sub-agent 2] --> R2[Result 2]
+        subgraph V2["code-quality"]
+            P2[Rules run sequentially:<br/>1. no-console.md<br/>2. require-tests.md] --> R2[Result 2]
         end
         subgraph V3["api-standards"]
-            P3[Sub-agent 3] --> R3[Result 3]
+            P3[Rules run sequentially:<br/>1. naming.md<br/>2. structure.md] --> R3[Result 3]
         end
     end
 
@@ -86,7 +89,9 @@ flowchart TB
     Out -->|Any Error| Block[Agent Must Fix]
 ```
 
-Each sub-agent receives the VALIDATOR.md prompt content along with context about the event. Implementations should provide relevant context in natural language, including:
+**Rule execution order:** Within a validator, rules are sorted by file path and executed in lexicographical order. Use filename prefixes (e.g., `01-`, `02-`) if dependencies exist between rules.
+
+Each sub-agent receives the rule's prompt content along with context about the event. Implementations should provide relevant context in natural language, including:
 
 - **Tool name**: Which tool was called (e.g., Write, Edit, Bash)
 - **File path**: The full path of the file being modified (if applicable)
@@ -99,7 +104,7 @@ The sub-agent processes this context and returns its assessment in natural langu
 - Details about any violations found
 - Suggestions for how to fix issues
 
-When validation fails, the validator's **severity** determines the consequence (see [Severity Levels](severity)).
+When validation fails, the **rule's severity** determines the consequence (see [Severity Levels](severity)).
 
 ### 5. Results Aggregated
 
@@ -107,9 +112,9 @@ Results from all validators are collected. The aggregation rules:
 
 | Individual Results | Aggregated Outcome | Behavior |
 |-------------------|-------------------|----------|
-| All validators pass | **PASSED** | Continue normally |
-| Any validator fails with `warn` severity | **WARNED** | Log warnings, continue |
-| Any validator fails with `error` severity | **ERROR** | Block until fixed |
+| All rules pass | **PASSED** | Continue normally |
+| Any rule fails with `warn` severity | **WARNED** | Log warnings, continue |
+| Any rule fails with `error` severity | **ERROR** | Block until fixed |
 
 When multiple validators fail:
 - All violations are combined into a single report

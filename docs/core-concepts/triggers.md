@@ -26,7 +26,7 @@ The framework parses the sub-agent's natural language response to determine the 
 
 **How decisions and severity interact**:
 - The sub-agent decides if validation **passed** (allow) or **failed** (deny/block)
-- When validation fails, the validator's **severity** determines the consequence:
+- When validation fails, the **rule's severity** determines the consequence:
   - `error` severity → block until fixed
   - `warn` severity → log warning, continue
   - `info` severity → log only

@@ -27,35 +27,64 @@ Agent hook systems like Claude Code's `PostToolUse` already let you run scripts 
 
 ## What is AVP?
 
-AVP is a specification for **prompt-based validators** — quality checks written in natural language rather than code. Instead of writing shell scripts or custom tooling, you write a prompt describing what to check. A sub-agent interprets your prompt and validates the code.
+AVP is a specification for **prompt-based validators** — quality checks written in natural language rather than code. Instead of writing shell scripts or custom tooling, you write prompts describing what to check. A sub-agent interprets your prompts and validates the code.
 
-Each validator is defined in a `VALIDATOR.md` file containing:
+Validators are organized as **RuleSets** — logical groupings of related rules in a folder structure. Each RuleSet contains:
 
-- **YAML frontmatter** with trigger conditions and severity
-- **Markdown prompt** that tells a sub-agent what to look for
+- **VALIDATOR.md** — Metadata, versioning, and common configuration
+- **rules/** directory — Individual rule files, each with its own validation logic and severity
+- **Optional files** — README.md, favicon.png, scripts/, references/, assets/
 
-This means anyone who can write a clear prompt can create a validator. No scripting required. Your validation rules are as flexible as natural language — check for security patterns, enforce architectural boundaries, verify documentation quality, or anything else you can describe.
+This means anyone who can write a clear prompt can create validators. No scripting required. Your validation rules are as flexible as natural language — check for security patterns, enforce architectural boundaries, verify documentation quality, or anything else you can describe.
 
-## Example Validator
+## Example RuleSet
 
+**Directory structure**:
+```
+.avp/validators/security-rules/
+├── VALIDATOR.md
+├── README.md
+└── rules/
+    ├── no-secrets.md
+    ├── no-sql-injection.md
+    └── no-xss.md
+```
+
+**VALIDATOR.md**:
 ```yaml
 ---
-name: no-secrets
-description: Detects hardcoded secrets like API keys and passwords in source code.
-severity: error
+name: security-rules
+description: Comprehensive security validation for code changes
+version: "1.0.0"
 trigger: PostToolUse
 match:
   tools: [Write, Edit]
-  files: ["*"]
+tags:
+  - security
 ---
 
-# No Secrets Validator
+# Security Rules
+
+Validates code changes against common security vulnerabilities.
+
+Rules are automatically discovered from the `rules/` directory.
+```
+
+**rules/no-secrets.md**:
+```yaml
+---
+name: no-secrets
+description: Detects hardcoded secrets like API keys and passwords
+severity: error
+---
+
+# No Secrets Rule
 
 Check for hardcoded secrets in the modified code.
 
-## Rules
+## Patterns
 
-1. API keys (patterns: sk-, api_key=, apiKey:)
+1. API keys (sk-, api_key=, apiKey:)
 2. Passwords (password=, passwd, pwd)
 3. AWS credentials
 4. Private keys (-----BEGIN.*PRIVATE KEY-----)
@@ -73,13 +102,15 @@ The validation flow integrates with agent hook systems:
 
 ## Severity Levels
 
-Each validator specifies a severity that determines behavior on violation:
+Each rule specifies a severity that determines behavior on violation:
 
 | Severity | Behavior |
 |----------|----------|
 | `info` | Log the result, continue execution |
 | `warn` | Notify user, continue execution |
 | `error` | Agent must fix violations before continuing |
+
+Different rules within the same RuleSet can have different severities — some blocking (`error`), others non-blocking (`warn` or `info`).
 
 ## Multiple Validators
 
@@ -94,22 +125,33 @@ Validators are discovered from two locations:
 
 ```
 .avp/validators/
-├── no-secrets.md           # Simple single-file validator
-├── no-console.md
-├── require-tests.md
-├── sql-injection/          # Complex validator with supporting files
+├── security-rules/         # Security RuleSet
 │   ├── VALIDATOR.md
-│   └── references/
-│       └── patterns.md
-└── custom-rules/           # Subdirectories for organization
-    ├── team-conventions.md
-    └── api-standards.md
+│   ├── README.md
+│   ├── favicon.png
+│   └── rules/
+│       ├── no-secrets.md
+│       ├── no-sql-injection.md
+│       └── no-xss.md
+├── code-quality/           # Quality RuleSet
+│   ├── VALIDATOR.md
+│   ├── README.md
+│   └── rules/
+│       ├── no-console.md
+│       └── require-tests.md
+└── team-conventions/       # Custom RuleSet
+    ├── VALIDATOR.md
+    └── rules/
+        ├── naming-conventions.md
+        └── import-order.md
 ```
 
-Validators can be:
-- **Single files**: `name.md` in a validators directory
-- **Directories**: `name/VALIDATOR.md` with optional `scripts/`, `references/`, `assets/`
-- **Nested**: Organized in subdirectories by team, category, or concern
+Each validator is a **RuleSet** — a directory containing:
+- **VALIDATOR.md** (required) — Metadata and configuration
+- **rules/** directory (required) — Individual rule files
+- **README.md** (optional) — Detailed documentation
+- **favicon.png** (optional) — Visual icon
+- **scripts/**, **references/**, **assets/** (optional) — Supporting files
 
 ### Discovery
 
@@ -123,13 +165,15 @@ When a hook event fires, all matching validators run concurrently:
 
 ```
 PostToolUse (Write to src/api.ts)
-    ├── no-secrets       ─┐
-    ├── no-console        ├── Run in parallel
-    ├── sql-injection     │
-    └── api-standards    ─┘
+    ├── security-rules       ─┐
+    ├── code-quality          ├── Validators run in PARALLEL
+    ├── team-conventions      │
+    └── api-standards        ─┘
 ```
 
-This parallel execution is a key advantage over monolithic hook scripts.
+Within each validator, rules execute in **lexicographical order** by file path.
+
+This parallel validator execution is a key advantage over monolithic hook scripts.
 
 ### Result Aggregation
 
