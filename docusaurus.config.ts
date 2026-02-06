@@ -55,7 +55,7 @@ const config: Config = {
       title: 'AVP',
       logo: {
         alt: 'AVP Logo',
-        src: 'img/favicon.png',
+        src: 'img/logo.png',
       },
       items: [
         {
