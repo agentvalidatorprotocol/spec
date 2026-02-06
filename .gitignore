@@ -17,6 +17,9 @@ vite.config.d.ts
 .acp/
 .swissarmyhammer/
 
+# Design tool source files
+*.pxd
+
 # Misc
 .DS_Store
 .env.local
