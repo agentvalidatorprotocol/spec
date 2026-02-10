@@ -5,7 +5,7 @@ const sidebars: SidebarsConfig = {
     {
       type: 'category',
       label: 'About AVP',
-      items: ['installation', 'introduction'],
+      items: ['introduction', 'installation'],
       collapsed: false,
     },
     {
@@ -21,7 +21,7 @@ const sidebars: SidebarsConfig = {
     {
       type: 'category',
       label: 'Reference',
-      items: ['reference/schema'],
+      items: ['reference/schema', 'reference/cli'],
     },
     {
       type: 'category',

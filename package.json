@@ -4,8 +4,9 @@
   "private": true,
   "scripts": {
     "docusaurus": "docusaurus",
-    "start": "docusaurus start",
-    "build": "docusaurus build",
+    "fetch-docs": "node scripts/fetch-external-docs.mjs",
+    "start": "npm run fetch-docs && docusaurus start",
+    "build": "npm run fetch-docs && docusaurus build",
     "swizzle": "docusaurus swizzle",
     "deploy": "docusaurus deploy",
     "clear": "docusaurus clear",
