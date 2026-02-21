@@ -85,7 +85,6 @@ The VALIDATOR.md file defines metadata and common settings for a RuleSet:
 ---
 name: validator-name
 description: What this RuleSet validates.
-version: "1.0.0"
 trigger: PostToolUse
 match:
   tools: [Write, Edit]
@@ -94,6 +93,8 @@ tags:
   - security
   - keyword1
 favicon: favicon.png
+metadata:
+  version: "1.0.0"
 ---
 
 # Validator Title
@@ -133,7 +134,6 @@ Specific patterns and conditions to evaluate.
 |-------|------|-------------|-------------|
 | `name` | string | 1-64 chars, kebab-case | Unique identifier for the validator |
 | `description` | string | 1-1024 chars | What this RuleSet validates |
-| `version` | string | Semver format | Version number (e.g., "1.0.0") |
 | `trigger` | string | Hook event name | When the validator runs |
 
 #### name
@@ -175,21 +175,6 @@ Poor example:
 ```yaml
 description: Checks for secrets.
 ```
-
-#### version
-
-The version of the validator using [Semantic Versioning](https://semver.org/):
-
-```yaml
-version: "1.0.0"    # Initial release
-version: "1.2.0"    # Added new rules
-version: "2.0.0"    # Breaking changes
-```
-
-**Format**: `MAJOR.MINOR.PATCH`
-- **MAJOR**: Incompatible changes (e.g., removed rules, changed behavior)
-- **MINOR**: Added functionality (e.g., new rules)
-- **PATCH**: Bug fixes and improvements
 
 #### trigger
 
@@ -388,14 +373,19 @@ compatibility: Requires Node.js 18+ and npm
 
 #### metadata
 
-Arbitrary key-value pairs for additional information:
+Arbitrary key-value pairs for additional information, following the [Agent Skills metadata convention](https://agentskills.io/specification#metadata-field). Use this field for properties not defined by the AVP spec, including versioning:
 
 ```yaml
 metadata:
   author: your-org
-  version: "1.0"
+  version: "1.0.0"
   source: https://github.com/your-org/validators
 ```
+
+We recommend [Semantic Versioning](https://semver.org/) for the `version` key:
+- **MAJOR**: Incompatible changes (e.g., removed rules, changed behavior)
+- **MINOR**: Added functionality (e.g., new rules)
+- **PATCH**: Bug fixes and improvements
 
 ## Rule File Frontmatter (Individual Rule Level)
 
@@ -540,7 +530,6 @@ See [references/security-rules.md](references/security-rules.md) for the complet
 ---
 name: security-rules
 description: Comprehensive security validation for code changes. Detects secrets, SQL injection, and XSS vulnerabilities.
-version: "1.0.0"
 trigger: PostToolUse
 match:
   tools: [Write, Edit]
@@ -550,6 +539,7 @@ tags:
 favicon: favicon.png
 metadata:
   author: security-team
+  version: "1.0.0"
   source: https://github.com/example/validators
 ---
 
@@ -634,7 +624,6 @@ Check for unsafe HTML rendering patterns.
 ---
 name: code-quality
 description: Enforces code quality standards including console cleanup and test coverage.
-version: "2.1.0"
 trigger: PostToolUse
 match:
   tools: [Write, Edit]
@@ -642,6 +631,8 @@ match:
 tags:
   - quality
   - testing
+metadata:
+  version: "2.1.0"
 ---
 
 # Code Quality Rules

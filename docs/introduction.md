@@ -55,12 +55,13 @@ This means anyone who can write a clear prompt can create validators. No scripti
 ---
 name: security-rules
 description: Comprehensive security validation for code changes
-version: "1.0.0"
 trigger: PostToolUse
 match:
   tools: [Write, Edit]
 tags:
   - security
+metadata:
+  version: "1.0.0"
 ---
 
 # Security Rules

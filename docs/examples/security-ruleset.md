@@ -36,7 +36,6 @@ The main configuration file defines RuleSet metadata and common settings:
 ---
 name: security-rules
 description: Comprehensive security validation for code changes. Detects secrets, SQL injection, and XSS vulnerabilities based on OWASP Top 10.
-version: "1.0.0"
 trigger: PostToolUse
 match:
   tools: [Write, Edit]
@@ -48,6 +47,7 @@ favicon: favicon.png
 license: MIT
 metadata:
   author: security-team
+  version: "1.0.0"
   source: https://github.com/example/security-rules
   documentation: https://example.com/docs/security
 ---
@@ -213,7 +213,7 @@ Subdirectories within `rules/` are scanned, so moving to `rules/disabled/` will 
 1. Fork the repository
 2. Create a feature branch
 3. Add or modify rules in `rules/`
-4. Update version in VALIDATOR.md
+4. Update metadata.version in VALIDATOR.md
 5. Submit a pull request
 
 ## License

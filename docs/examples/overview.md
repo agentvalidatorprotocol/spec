@@ -27,7 +27,7 @@ A comprehensive RuleSet demonstrating multiple related security rules.
 - Mixed severity levels (error and warn)
 - Complete directory structure with README, favicon, scripts
 - Rule inheritance and overrides
-- Versioning with semver
+- Versioning with semver via metadata
 
 ## Learning Path
 
@@ -45,5 +45,5 @@ All validators in AVP 1.0 are **RuleSets** — directories containing:
 This structure provides:
 - **Organization** — Group related rules together
 - **Flexibility** — Mix blocking and non-blocking rules
-- **Versioning** — Track changes with semver
+- **Versioning** — Track changes with semver via metadata
 - **Documentation** — Detailed README for users

@@ -43,7 +43,7 @@ Rules within a RuleSet share common resources:
 
 RuleSets support efficient context usage through layered information:
 
-1. **Metadata** (~100 tokens): Name, description, version loaded at discovery
+1. **Metadata** (~100 tokens): Name, description loaded at discovery
 2. **VALIDATOR.md** (~500 tokens): RuleSet overview and configuration
 3. **README.md** (~1000 tokens): Detailed documentation loaded on demand
 4. **Rule files** (~500 tokens each): Individual validation logic loaded when triggered
@@ -53,13 +53,14 @@ This means agents only load what they need, when they need it.
 
 ### Versioning
 
-RuleSets use semantic versioning to track changes:
+RuleSets track versions via the `metadata.version` key, following [Agent Skills conventions](https://agentskills.io/specification#metadata-field). We recommend [Semantic Versioning](https://semver.org/):
 
 ```yaml
-version: "1.0.0"    # Initial release
-version: "1.1.0"    # Added no-xss.md rule
-version: "1.2.0"    # Added no-sql-injection.md rule
-version: "2.0.0"    # Changed no-secrets severity to error
+metadata:
+  version: "1.0.0"    # Initial release
+  version: "1.1.0"    # Added no-xss.md rule
+  version: "1.2.0"    # Added no-sql-injection.md rule
+  version: "2.0.0"    # Changed no-secrets severity to error
 ```
 
 ## RuleSet Structure
@@ -76,12 +77,13 @@ The main configuration file defining RuleSet metadata:
 ---
 name: security-rules
 description: Comprehensive security validation for code changes
-version: "1.0.0"
 trigger: PostToolUse
 match:
   tools: [Write, Edit]
 tags:
   - security
+metadata:
+  version: "1.0.0"
 ---
 
 # Security Rules
@@ -143,7 +145,7 @@ Understanding the difference:
 
 | File | Audience | Purpose | Content |
 |------|----------|---------|---------|
-| **VALIDATOR.md** | Agents | Metadata & instructions | Version, triggers, tags, prompt for sub-agent |
+| **VALIDATOR.md** | Agents | Metadata & instructions | Triggers, tags, metadata, prompt for sub-agent |
 | **README.md** | Humans | User documentation | Installation, usage guide, configuration examples |
 
 **When they're used**:
@@ -392,7 +394,7 @@ Include a README.md that explains:
 
 ### Version Thoughtfully
 
-Follow semantic versioning:
+Use `metadata.version` with semantic versioning:
 - **Patch** (1.0.1): Bug fixes, improved detection
 - **Minor** (1.1.0): New rules added, backward compatible
 - **Major** (2.0.0): Removed rules, changed behavior, breaking changes

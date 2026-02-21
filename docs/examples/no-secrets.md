@@ -71,7 +71,6 @@ The RuleSet configuration file:
 ---
 name: no-secrets
 description: Detects hardcoded secrets, API keys, and credentials in code. Blocks commits containing credentials to prevent security leaks.
-version: "1.0.0"
 trigger: PostToolUse
 match:
   tools: [Write, Edit]
@@ -81,6 +80,7 @@ tags:
   - credentials
 metadata:
   author: security-team
+  version: "1.0.0"
 ---
 
 # No Secrets Validator
@@ -219,6 +219,6 @@ This example demonstrates:
 - **Blocking severity** — Error level prevents commits with secrets
 - **Clear detection patterns** — Specific examples of violations
 - **Safe alternatives** — How to properly handle credentials
-- **Versioning** — Using semver (1.0.0)
+- **Versioning** — Using semver via metadata.version (1.0.0)
 
 For a more complex example with multiple rules, see [Security RuleSet](security-ruleset).
