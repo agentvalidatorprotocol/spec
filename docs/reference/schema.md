@@ -300,6 +300,10 @@ Available matchers by trigger:
 | `Setup` | `init`, `maintenance` |
 | `PreCompact` | `manual`, `auto` |
 | `Notification` | `permission_prompt`, `idle_prompt`, `auth_success`, `elicitation_dialog` |
+| `ConfigChange` | `user_settings`, `project_settings`, `local_settings`, `policy_settings`, `skills` |
+| `Elicitation` | MCP server name (regex supported) |
+| `ElicitationResult` | MCP server name (regex supported) |
+| `InstructionsLoaded` | File path (regex supported) |
 
 #### once
 
@@ -484,6 +488,19 @@ All supported triggers compatible with Claude Code hooks:
 - `SessionEnd` - Session ends (supports triggerMatcher)
 - `Setup` - During setup/maintenance (supports triggerMatcher)
 - `PreCompact` - Before compaction (supports triggerMatcher)
+- `PostCompact` - After compaction (command hooks only, observe-only)
+- `InstructionsLoaded` - CLAUDE.md/rules loaded (command hooks only, observe-only)
+- `ConfigChange` - Config files changed (command hooks only, supports triggerMatcher)
+- `WorktreeCreate` - Worktree created (command hooks only)
+- `WorktreeRemove` - Worktree removed (command hooks only, observe-only)
+
+### MCP Interactions
+- `Elicitation` - MCP server requests user input (command hooks only, supports matchers)
+- `ElicitationResult` - User responds to elicitation (command hooks only, supports matchers)
+
+### Agent Team
+- `TeammateIdle` - Agent teammate goes idle (no matcher support)
+- `TaskCompleted` - Task marked complete (no matcher support)
 
 ### Notifications
 - `Notification` - On notifications (supports triggerMatcher)

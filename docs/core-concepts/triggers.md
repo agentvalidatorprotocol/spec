@@ -40,11 +40,19 @@ The framework parses the sub-agent's natural language response to determine the 
 Hooks fire at specific points during an agent session:
 
 ```
-SessionStart → UserPromptSubmit → [Agentic Loop] → Stop → SessionEnd
-                                        ↓
-                           PreToolUse → Tool Execution → PostToolUse
-                                        ↓
-                           SubagentStart → [Subagent] → SubagentStop
+InstructionsLoaded → SessionStart → UserPromptSubmit → [Agentic Loop] → Stop → SessionEnd
+                                                            ↓
+                                               PreToolUse → Tool Execution → PostToolUse
+                                                            ↓
+                                               SubagentStart → [Subagent] → SubagentStop
+                                                            ↓
+                                               Elicitation → [User Input] → ElicitationResult
+                                                            ↓
+                                               TeammateIdle    TaskCompleted
+
+ConfigChange ─── fires on config file changes (any point during session)
+PreCompact → [Compaction] → PostCompact
+WorktreeCreate / WorktreeRemove ─── fires on worktree operations
 ```
 
 ## Available Triggers
@@ -117,6 +125,46 @@ When a subagent finishes.
 
 **Decision control**: `block` to force continuation
 
+### MCP Interaction Triggers
+
+These triggers fire during MCP server elicitation flows. Command hooks only.
+
+#### Elicitation
+When an MCP server requests user input via the elicitation protocol.
+
+**Use case**: Validate or deny elicitation requests from MCP servers, enforce policies on which servers can prompt users.
+
+**Supports matchers**: MCP server name
+
+**Decision control**: `allow`, `deny`
+
+#### ElicitationResult
+When a user responds to an MCP elicitation request.
+
+**Use case**: Validate user responses before they reach the MCP server, block sensitive data from being sent.
+
+**Supports matchers**: MCP server name
+
+**Decision control**: `allow`, `block`
+
+### Agent Team Triggers
+
+These triggers fire during multi-agent collaboration. No matcher support.
+
+#### TeammateIdle
+When an agent teammate goes idle.
+
+**Use case**: Prevent teammates from idling when work remains, assign new tasks.
+
+**Decision control**: `allow`, `block` to prevent idling
+
+#### TaskCompleted
+When a task is marked complete.
+
+**Use case**: Validate task completion, ensure acceptance criteria are met before allowing completion.
+
+**Decision control**: `allow`, `block` to prevent completion
+
 ### Session Lifecycle Triggers
 
 #### SessionStart
@@ -159,6 +207,46 @@ Before context compaction.
 - `manual` - User invoked `/compact`
 - `auto` - Automatic compaction (context limit)
 
+#### PostCompact
+After context compaction completes. Command hooks only. Cannot block.
+
+**Use case**: Log compaction events, update external state after compaction.
+
+#### InstructionsLoaded
+When CLAUDE.md or rules files are loaded. Command hooks only. Cannot block.
+
+**Use case**: Track which instruction files are loaded, log for auditing.
+
+**Supports matchers**: File path
+
+#### ConfigChange
+When configuration files change. Command hooks only.
+
+**Use case**: Validate config changes, block dangerous settings, audit configuration updates.
+
+**Supports matchers**: Source type
+
+**Decision control**: `allow`, `block`
+
+**Trigger matchers**:
+- `user_settings` - User-level settings changed
+- `project_settings` - Project-level settings changed
+- `local_settings` - Local settings changed
+- `policy_settings` - Policy settings changed
+- `skills` - Skills configuration changed
+
+#### WorktreeCreate
+When a git worktree is created. Command hooks only.
+
+**Use case**: Validate worktree creation, enforce branch naming conventions.
+
+**Decision control**: `allow`, `deny` to prevent creation
+
+#### WorktreeRemove
+When a git worktree is removed. Command hooks only. Cannot block.
+
+**Use case**: Cleanup, logging, track worktree lifecycle.
+
 ### Notification Trigger
 
 #### Notification
@@ -170,7 +258,7 @@ When the agent sends notifications.
 - `permission_prompt` - Permission requests
 - `idle_prompt` - Waiting for user input (60+ seconds)
 - `auth_success` - Authentication success
-- `elicitation_dialog` - MCP tool elicitation
+- `elicitation_dialog` - MCP tool elicitation (legacy — prefer the first-class `Elicitation` trigger)
 
 ## Common Patterns
 
