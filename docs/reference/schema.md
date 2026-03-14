@@ -291,19 +291,24 @@ trigger: Notification
 triggerMatcher: permission_prompt
 ```
 
-Available matchers by trigger:
+Available `triggerMatcher` values by trigger:
 
-| Trigger | Matchers |
-|---------|----------|
+| Trigger | triggerMatcher values |
+|---------|---------------------|
 | `SessionStart` | `startup`, `resume`, `clear`, `compact` |
 | `SessionEnd` | `clear`, `logout`, `prompt_input_exit`, `other` |
 | `Setup` | `init`, `maintenance` |
 | `PreCompact` | `manual`, `auto` |
 | `Notification` | `permission_prompt`, `idle_prompt`, `auth_success`, `elicitation_dialog` |
 | `ConfigChange` | `user_settings`, `project_settings`, `local_settings`, `policy_settings`, `skills` |
-| `Elicitation` | MCP server name (regex supported) |
-| `ElicitationResult` | MCP server name (regex supported) |
-| `InstructionsLoaded` | File path (regex supported) |
+
+Triggers that support `match` with regex patterns:
+
+| Trigger | Match field | Description |
+|---------|------------|-------------|
+| `Elicitation` | MCP server name | Regex matched against `mcp_server_name` |
+| `ElicitationResult` | MCP server name | Regex matched against `mcp_server_name` |
+| `InstructionsLoaded` | File path | Regex matched against loaded file path |
 
 #### once
 

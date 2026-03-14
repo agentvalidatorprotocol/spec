@@ -224,8 +224,6 @@ When configuration files change. Command hooks only.
 
 **Use case**: Validate config changes, block dangerous settings, audit configuration updates.
 
-**Supports matchers**: Source type
-
 **Decision control**: `allow`, `block`
 
 **Trigger matchers**:
@@ -309,6 +307,33 @@ Use `SessionStart` with a trigger matcher to load context at appropriate times.
 ```yaml
 trigger: SessionStart
 triggerMatcher: startup
+```
+
+### MCP Elicitation Policy
+
+Use `Elicitation` to control which MCP servers can prompt users.
+
+```yaml
+trigger: Elicitation
+match:
+  tools: ["^untrusted-.*"]  # Regex on MCP server name
+```
+
+### Config Change Auditing
+
+Use `ConfigChange` with a trigger matcher to validate specific config sources.
+
+```yaml
+trigger: ConfigChange
+triggerMatcher: policy_settings
+```
+
+### Task Completion Gates
+
+Use `TaskCompleted` to enforce quality gates before tasks can be marked done.
+
+```yaml
+trigger: TaskCompleted
 ```
 
 ## Matchers
